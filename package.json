@@ -1,0 +1,35 @@
+{
+  "name": "ignite-openapi",
+  "version": "0.2.0",
+  "description": "Open API (Swagger) client for Ignite",
+  "author": "Ignite Platform Team",
+  "contributors": [
+    "Ignite Team"
+  ],
+  "main": "openApi-red.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "node-red",
+    "swagger",
+    "swagger client",
+    "open api",
+    "open api client",
+    "open",
+    "api"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/2WeltenChris/openApi-red.git"
+  },
+  "license": "MIT",
+  "node-red": {
+    "nodes": {
+      "openApi-red": "openApi-red.js"
+    }
+  },
+  "dependencies": {
+    "swagger-client": "^3.10.9"
+  }
+}
