@@ -254,7 +254,7 @@
     }
   }
 
-  RED.nodes.registerType('openApi-red', {
+  RED.nodes.registerType('ignite-openapi', {
     category: 'network',
     color: '#b197ff',
     defaults: {
@@ -371,8 +371,8 @@
 })
 </script>
 
-<script type="text/html" data-template-name="openApi-red">
-  <div id="openApi-red">
+<script type="text/html" data-template-name="ignite-openapi">
+  <div id="ignite-openapi">
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
@@ -423,7 +423,7 @@
   </div>
 </script>
 
-<script type="text/html" data-help-name="openApi-red">
+<script type="text/html" data-help-name="ignite-openapi">
     <p>Use OpenAPI / Swagger with Node-Red.</p>
     <h3>Inputs</h3>
         <dl class="message-properties">
@@ -481,22 +481,22 @@
 </script>
 
 <style>
-  #openApi-red .error { border:2px solid red !important; }
-  #openApi-red .nodeError, #openApi-red .paramIsRequired { 
+  #ignite-openapi .error { border:2px solid red !important; }
+  #ignite-openapi .nodeError, #ignite-openapi .paramIsRequired { 
     color: red; 
     font-weight: bold;
   }
-  #openApi-red #node-input-parameters-container {
+  #ignite-openapi #node-input-parameters-container {
     min-height: 300px;
     height: 600px;
     min-width: 650px;
   }
-  #openApi-red .red-ui-editableList-item-content { 
+  #ignite-openapi .red-ui-editableList-item-content { 
     display: flex;
     align-items: center;
   }
-  #openApi-red .paramName { min-width: 170px; }
-  #openApi-red .paramType { min-width: 100px; }
-  #openApi-red input.node-input-parameter.paramChecked { width: 45px !important;}
-  #openApi-red .red-ui-typedInput-container { width: calc(100% - 315px) !important; }
+  #ignite-openapi .paramName { min-width: 170px; }
+  #ignite-openapi .paramType { min-width: 100px; }
+  #ignite-openapi input.node-input-parameter.paramChecked { width: 45px !important;}
+  #ignite-openapi .red-ui-typedInput-container { width: calc(100% - 315px) !important; }
 </style>

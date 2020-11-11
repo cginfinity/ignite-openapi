@@ -1,4 +1,4 @@
-# OpenAPI-RED
+# ignite-openapi
 
 This node allows to work with APIs defined by OpenAPI 3 (Swagger). You can set parameters within the Node-RED-UI and trigger the flow from within your flow.
 
@@ -9,20 +9,20 @@ It is based on [swagger-js](https://github.com/swagger-api/swagger-js).
 ### 1. Get the API-operations list
 Enter the URL to your OpenAPI configuration (json or yaml file) and push the read-button. That's it. You can now select the operation you want to run.
 
-![Operations](https://gitlab.com/2WeltenChris/openapi-red/raw/master/examples/operations.png?raw=true "Operations")
+![Operations](https://gitlab.com/2WeltenChris/ignite-openapi/raw/master/examples/operations.png?raw=true "Operations")
 
 ## 2. Understanding the API
 
 Hovering on an operations title or a key, you see the respective comments within the mouseover. This allows you to understand what a parameter is meant for. Required parameters are marked with an asterisk.
 
-![operation description](https://gitlab.com/2WeltenChris/openapi-red/raw/master/examples/operation_description.png?raw=true "Operation description")
+![operation description](https://gitlab.com/2WeltenChris/ignite-openapi/raw/master/examples/operation_description.png?raw=true "Operation description")
 
 
-![parameter description](https://gitlab.com/2WeltenChris/openapi-red/raw/master/examples/parameter_description.png?raw=true "Parameter description")
+![parameter description](https://gitlab.com/2WeltenChris/ignite-openapi/raw/master/examples/parameter_description.png?raw=true "Parameter description")
 
 For JSON-parameters you can further show the structure by clicking on show keys. Again, the comments can be found within the mouseover.
 
-![json description](https://gitlab.com/2WeltenChris/openapi-red/raw/master/examples/json_description.png?raw=true "Json description")
+![json description](https://gitlab.com/2WeltenChris/ignite-openapi/raw/master/examples/json_description.png?raw=true "Json description")
 
 ## 3. Parameter configuration
 
@@ -44,10 +44,10 @@ You can choose how to handle a returning server error. The last server response 
 
 You find that example also in the sample flow (see below).
 
-![Error handling](https://gitlab.com/2WeltenChris/openapi-red/raw/master/examples/error_handling.png?raw=true "Error handling")
+![Error handling](https://gitlab.com/2WeltenChris/ignite-openapi/raw/master/examples/error_handling.png?raw=true "Error handling")
 
 ## Sample flow
 
 You can find a sample flow in the node red imports where you can see some examples on how to configure the node.
 
-![Example](https://gitlab.com/2WeltenChris/openapi-red/raw/master/examples/examples.png?raw=true "Example Node")
+![Example](https://gitlab.com/2WeltenChris/ignite-openapi/raw/master/examples/examples.png?raw=true "Example Node")
