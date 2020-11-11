@@ -1,6 +1,6 @@
 {
   "name": "@cgignite/ignite-openapi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Open API (Swagger) client for Ignite",
   "author": "Ignite Platform Team",
   "contributors": [
@@ -27,6 +27,6 @@
     }
   },
   "dependencies": {
-    "swagger-client": "^3.10.9"
+    "swagger-client": "^3.12.0"
   }
 }
