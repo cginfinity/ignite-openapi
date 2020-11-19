@@ -14,7 +14,7 @@ function sendError (node, config, msg, e) {
 }
 
 module.exports = function (RED) {
-  function openApiRed (config) {
+  function igniteOpenapi (config) {
     RED.nodes.createNode(this, config)
     const node = this
 
@@ -91,7 +91,7 @@ module.exports = function (RED) {
       })
     })
   }
-  RED.nodes.registerType('OpenApi', openApiRed)
+  RED.nodes.registerType('ignite-openapi', igniteOpenapi)
 
   // create API List
   RED.httpAdmin.get('/getNewOpenApiInfo', (request, response) => {
