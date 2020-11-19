@@ -6,18 +6,21 @@ function sendError (node, config, msg, e) {
   msg.response = e.response
   if (config.errorHandling === 'other output') {
     node.send([null, msg])
+    this.status({fill:"red",shape:"ring",text:"disconnected"});
   } else if (config.errorHandling === 'throw exception') {
     node.error(e.message, msg)
+    this.status({fill:"red",shape:"ring",text:"disconnected"});
   } else {
     node.send(msg)
   }
 }
 
+
 module.exports = function (RED) {
   function igniteOpenapi (config) {
     RED.nodes.createNode(this, config)
     const node = this
-
+    this.status({fill:"red",shape:"ring",text:"disconnected"});
     node.on('input', function (msg) {
       let openApiUrl = config.openApiUrl
       if (msg.openApi && msg.openApi.url) openApiUrl = msg.openApi.url
@@ -36,6 +39,7 @@ module.exports = function (RED) {
           }
           // can't use 'if (evaluatedInput)' due to values false and 0
           if (param.required && (evaluatedInput === '' || evaluatedInput === null || evaluatedInput === undefined)) {
+            this.status({fill:"red",shape:"ring",text:"disconnected"});
             return node.error(`Required input for ${param.name} is missing.`, msg)
           }
           if (param.isActive && param.name !== 'Request Body') {
@@ -84,20 +88,22 @@ module.exports = function (RED) {
             msg.payload = res
             node.send(msg)
           }).catch((e) => {
+            this.status({fill:"red",shape:"ring",text:"disconnected"});
             sendError(node, config, msg, e)
           })
       }).catch(e => {
+        this.status({fill:"red",shape:"ring",text:"disconnected"});
         sendError(node, config, msg, e)
       })
     })
   }
   RED.nodes.registerType('ignite-openapi', igniteOpenapi)
-
   // create API List
   RED.httpAdmin.get('/getNewOpenApiInfo', (request, response) => {
     const openApiUrl = request.query.openApiUrl
     if (!openApiUrl) {
       response.send("Missing or invalid openApiUrl parameter 'openApiUrl': " + openApiUrl)
+      this.status({fill:"red",shape:"ring",text:"disconnected"});
       return
     }
     const decodedUrl = decodeURIComponent(openApiUrl)
@@ -127,10 +133,12 @@ module.exports = function (RED) {
           }
         })
       })
+      this.status({fill:"green",shape:"dot",text:"connected"});
       response.send(newApiList)
     }).catch((e) => {
       if (e.message) response.send(e.message.toString())
       else response.send('Error: ' + e)
+      this.status({fill:"red",shape:"ring",text:"disconnected"});
     })
   })
 }
