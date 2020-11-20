@@ -327,11 +327,16 @@
     })
 
     $('#node-input-createOpenApi-ApiFromUrl').on("click", function() {
+      $("#ignite-openapi").find('[class*="loader"]').css('display', 'block')
+      setTimeout(()=>{
+        $("#ignite-openapi").find('[class*="loader"]').css('display', 'none')
+      },2000)
       createApiList(node, apiList).then( (value) => {
         apiList = value
         createAPISelector(node, apiList)
         createOperationSelector(node, apiList)
       }).catch( (e) => showError(e))
+      
     })
 
     // server call for building api is async therefore put this at the end to not trigger other events
@@ -397,6 +402,7 @@
         <select type="text" id="node-input-api" >
             <option value=""></option>
         </select>
+        <span class="loader"></span>
     </div>
     <div class="form-row">
         <label for="node-input-operation"><i class="icon-tag"></i> Operation</label>
@@ -499,4 +505,27 @@
   #ignite-openapi .paramType { min-width: 100px; }
   #ignite-openapi input.node-input-parameter.paramChecked { width: 45px !important;}
   #ignite-openapi .red-ui-typedInput-container { width: calc(100% - 315px) !important; }
+
+  .loader {
+  border: 10px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 10px solid #3498db;
+  width: 0px;
+  height: 0px;
+  display: none;
+  float: right;
+  -webkit-animation: spin 1s linear infinite; /* Safari */
+  animation: spin 1s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 </style>
