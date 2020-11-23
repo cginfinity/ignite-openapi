@@ -14,6 +14,9 @@
     .fail(function(e) {
       showError(e)
     })
+    .catch(() => {
+        showError("Please enter valid url!")
+    })
   }
 
   function showError(message) {
@@ -21,6 +24,8 @@
     $('#node-input-api').val("")
     $('#node-input-operation').val("")
     $('.nodeError').html(message)
+    $("#ignite-openapi").find('[class*="loader"]').css('display', 'none')
+    $("#ignite-openapi").find('[class*="success-text"]').css('display', 'none')
   }
   
   function objectHasValues(object) {
@@ -259,7 +264,7 @@
     color: '#b197ff',
     defaults: {
       name: {value: ''},
-      openApiUrl: {value: ''},
+      openApiUrl: { value: '', required: true },
       api: {value: ''},
       operation: {value: ''},
       operationData: {value: {}},
@@ -326,12 +331,26 @@
       }
     })
 
-    $('#node-input-createOpenApi-ApiFromUrl').on("click", function() {
-      createApiList(node, apiList).then( (value) => {
-        apiList = value
-        createAPISelector(node, apiList)
-        createOperationSelector(node, apiList)
-      }).catch( (e) => showError(e))
+    $('#node-input-createOpenApi-ApiFromUrl').on("click", function () {
+        const openApiUrl = encodeURI($('#node-input-openApiUrl').val())
+        if (openApiUrl === undefined || openApiUrl === '') {
+            showError("Please enter valid url!")
+            return
+        }
+        $("#ignite-openapi").find('[class*="loader"]').css('display', 'block')
+        setTimeout(() => {
+            createApiList(node, apiList).then((value) => {
+                if (value === undefined) {
+                    showError("Please enter valid url!")
+                    return
+                }
+                apiList = value
+                createAPISelector(node, apiList)
+                createOperationSelector(node, apiList)
+                $("#ignite-openapi").find('[class*="loader"]').css('display', 'none')
+                $("#ignite-openapi").find('[class*="success-text"]').css('display', 'block')
+            }).catch((e) => showError(e))
+        }, 2000)
     })
 
     // server call for building api is async therefore put this at the end to not trigger other events
@@ -381,6 +400,9 @@
         <label for="node-input-openApiUrl"><i class="icon-tag"></i> URL</label>
         <input type="text" id="node-input-openApiUrl">
         <button type="button" id="node-input-createOpenApi-ApiFromUrl" class="btn">read</button>
+        <div>
+            <span class="loader"></span>
+        </div>
     </div>
     <div class="form-row">
       <label for="node-input-errorHandling"><i class="icon-tag"></i> Error handling</label>
@@ -390,7 +412,7 @@
           <option value="throw exception">Throw an exception</option>
       </select>
     </div>
-    <div class="nodeError"></div>
+    <div class="nodeError"></div><span class="success-text">Success</span>
     <hr>
     <div class="form-row">
         <label for="node-input-api"><i class="icon-tag"></i> API tag</label>
@@ -499,4 +521,46 @@
   #ignite-openapi .paramType { min-width: 100px; }
   #ignite-openapi input.node-input-parameter.paramChecked { width: 45px !important;}
   #ignite-openapi .red-ui-typedInput-container { width: calc(100% - 315px) !important; }
+
+    .loader {
+        border: 10px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 10px solid #3498db;
+        width: 0px;
+        height: 0px;
+        display: none;
+        -webkit-animation: spin 1s linear infinite; /* Safari */
+        animation: spin 1s linear infinite;
+    }
+
+    .success-text {
+        color: green;
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        font-weight: bold;
+        line-height: 20px;
+        display: none;
+        text-shadow: 1px 1px rgba(250,250,250,.3);
+    }
+
+    /* Safari */
+    @-webkit-keyframes spin {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 </style>
