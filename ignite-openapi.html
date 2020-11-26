@@ -342,7 +342,8 @@
         setTimeout(() => {
             createApiList(node, apiList).then((value) => {
                 if (value === undefined) {
-                    showError("Please enter valid url!")
+                    
+                  showError("Please enter valid url!")
                     return
                 }
                 apiList = value
@@ -350,6 +351,7 @@
                 createOperationSelector(node, apiList)
                 $("#ignite-openapi").find('[class*="loader"]').css('display', 'none')
                 $("#ignite-openapi").find('[class*="success-text"]').css('display', 'block')
+                
             }).catch((e) => showError(e))
         }, 2000)
     })
