@@ -46,7 +46,7 @@
       if (!api) api = node.api
       if (api !== "" && apiList[api] ) {
         $.each(apiList[api], function(operation, value) {
-          $("#node-input-operation").append("<option value=" + value.operationId + ">" + value.summary + "</option>")
+          $("#node-input-operation").append("<option value=" + value.operationId + ">" + value.operationId  + "</option>")
         })
       }
       $('#node-input-operation').val(node.operation)
@@ -92,10 +92,11 @@
         for (let param of parameterList) {
           $("#node-input-parameters-container").editableList('addItem', param)
         }
-      } else {
-        $('.inputUrl .red-ui-typedInput-container').addClass( "error")
-        $('.nodeError').html('No parameters found')
-      }
+      } 
+      // else {
+      //   $('.inputUrl .red-ui-typedInput-container').addClass( "error")
+      //   $('.nodeError').html('No parameters found')
+      // }
     }
   }
 

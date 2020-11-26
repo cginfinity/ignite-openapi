@@ -1,6 +1,7 @@
 const Swagger = require('swagger-client')
 
 function sendError (node, config, msg, e) {
+  node.status({fill:"red",shape:"ring",text:"disconnected"})
   // node.error can't save the data we
   if (e.message && isNaN(e.message.substring(0, 1)) && e.status) e.message = e.status + ' ' + e.message
   msg.response = e.response
@@ -16,9 +17,10 @@ function sendError (node, config, msg, e) {
 module.exports = function (RED) {
   function igniteOpenapi (config) {
     RED.nodes.createNode(this, config)
-    const node = this
+      const node = this
 
     node.on('input', function (msg) {
+      node.status({});
       let openApiUrl = config.openApiUrl
       if (msg.openApi && msg.openApi.url) openApiUrl = msg.openApi.url
       let parameters = {}
@@ -82,17 +84,20 @@ module.exports = function (RED) {
         })
           .then((res) => {
             msg.payload = res
+            node.status({fill:"green",shape:"ring",text:"connected"})
             node.send(msg)
           }).catch((e) => {
             sendError(node, config, msg, e)
+            node.status({fill:"green",shape:"ring",text:"connected"})
           })
       }).catch(e => {
         sendError(node, config, msg, e)
+        node.status({fill:"red",shape:"ring",text:"disconnected"})
       })
     })
   }
   RED.nodes.registerType('ignite-openapi', igniteOpenapi)
-
+ 
   // create API List
   RED.httpAdmin.get('/getNewOpenApiInfo', (request, response) => {
     const openApiUrl = request.query.openApiUrl
