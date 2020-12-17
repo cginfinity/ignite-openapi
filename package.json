@@ -1,12 +1,12 @@
 {
   "name": "@cgignite/ignite-openapi",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Open API (Swagger) client for Ignite",
   "author": "Ignite Platform Team",
   "contributors": [
-    "Ignite Team"
+    "Ignite Team",
+    "Ravi-Kaushish"
   ],
-  "main": "ignite-openapi.js",
   "keywords": [
     "node-red",
     "swagger",
@@ -23,10 +23,21 @@
   "license": "MIT",
   "node-red": {
     "nodes": {
-      "ignite-openapi": "ignite-openapi.js"
+      "ignite-openapi": "ignite-openapi.js",
+      "ignite-openapirouter": "ignite-openapirouter.js"
     }
   },
   "dependencies": {
+    "body-parser": "^1.19.0",
+    "content-type": "^1.0.4",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "hash-sum": "^2.0.0",
+    "is-utf8": "^0.2.1",
+    "media-typer": "^1.1.0",
+    "multer": "^1.4.2",
+    "on-headers": "^1.0.2",
+    "raw-body": "^2.4.1",
     "swagger-client": "^3.12.0"
   }
 }

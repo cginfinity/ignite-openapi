@@ -1,0 +1,208 @@
+<script type="text/javascript">
+    RED.nodes.registerType('ignite-openapirouter', {
+        category: 'network',
+        color: '#b197ff',
+        defaults: {
+            name: { value: "" },
+            docurl: { value: "" },
+            hidddenendpointsdata : {value: ""},
+            outputs: { value: 1},
+            outputLabels: { value: ["abcd"]}
+        },
+        inputs: 0,
+        outputs: 1,
+        outputLabels: [],
+        icon: 'font-awesome/fa-tasks',
+        label: function () {
+            return this.name || "api router";
+        },
+        oneditprepare : function () {
+            if(this.hidddenendpointsdata){
+                try{
+                    prepareEndpoints(JSON.parse(this.hidddenendpointsdata));
+                }catch(e){
+                    console.log(e);
+                    this.hidddenendpointsdata = ""
+                }
+            }
+        },
+
+        oneditsave : function () {
+            console.log("fucntion 1")
+
+            await readAndSaveFinalData();
+            this.outputLabels = ["abcd", "dodo", "pikachu"]
+            // this.generatejwt = $("#node-input-generatejwt").val() == "true";
+            // if(this.generatejwt)
+            // {
+            //     $("#node-input-outputs").val(JSON.stringify(1));
+            // }
+            // else
+            // {
+            //     $("#node-input-outputs").val(JSON.stringify(2));
+            // }
+        }
+    });
+
+    async function readAndSaveFinalData(){
+        //read data from table
+
+        //set hidden field value to persist manually added routes
+        $("#node-input-outputs").val(JSON.stringify(3));
+        $("#node-input-outputLabels").val(JSON.stringify(["abcd", "dodo", "pikachu"]));
+    }
+
+    async function outputLabelsfxn(){
+        // console.log("2")
+        // //read data from table
+
+        // //set hidden field value to persist manually added routes
+        // $("#node-input-outputs").val(JSON.stringify(3));
+    }
+
+    async function readOpenApiDoc(){
+        var openApiUrl = $('#node-input-docurl').val();
+        if (openApiUrl === undefined || openApiUrl === '') {
+                $('#node-input-readdoc-msg').html(`Please provide a valid Open Api Url.`);
+                $('#node-input-readdoc-msg').show();
+            return
+        }else{
+            try{
+                var response = await fetch(openApiUrl);
+                var data = await response.json();
+                if(data){
+                    $('#node-input-readdoc-msg').html(``);
+                    $('#node-input-readdoc-msg').hide();
+                    var basePath = data.basePath;
+                    var endpoints = Object.keys(data.paths);
+                    //transform data for populating
+                    endpoints_details = [];
+                    for(let i in endpoints){
+                        let methods = Object.keys(data.paths[endpoints[i]])
+                        for(let j in methods){
+                            item = {
+                                "index": `${i}${j}`,
+                                "method": methods[j],
+                                "url":  basePath ? `${basePath}${endpoints[i]}` : endpoints[i]
+                            }
+                            endpoints_details.push(item);
+                        }
+                    }
+                    //call the function to prepare endpoints
+                    prepareEndpoints(endpoints_details);
+                    return ;
+                }else{
+                    $('#node-input-readdoc-msg').html(`No Data Recieved from Url.`);
+                    $('#node-input-readdoc-msg').show();
+                }
+            }catch(error){
+                console.log(error);
+                $('#node-input-readdoc-msg').html(`Error while processing data.`);
+                $('#node-input-readdoc-msg').show();
+                return
+            }
+        }
+    }
+
+    async function prepareEndpoints(data){
+        await clearEndpointsData()
+        for (let i in data){
+            var unique_id = Math.floor(1000 + Math.random() * 9000);
+            let method = data[i].method.toUpperCase();
+            let url = data[i].url;
+
+            if(url.slice(0,1) !== "/"){
+                url = `/${url}`
+            }
+
+            //add the logic to clean endpoints here
+            pushToTable(method, url, unique_id);
+        }
+    }
+
+    async function clearEndpointsData(){
+        $("#node-input-endpoints-container").empty()
+        $("#node-input-hidddenendpointsdata").val("");
+    }
+
+    function pushToTable(method="GET", url="", unique_id=""){
+        if(!unique_id){
+            unique_id = Math.floor(1000 + Math.random() * 9000);
+        }
+        //inserting row into the table
+        $(`<tr style="width=100%;height:35px;margin-top:5px;" id="node-input-openapi-endpoints-row-${unique_id}">
+            <td>
+                <select name="method" id="node-input-openapi-methods-${method}-${unique_id}" style="width:100%;">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="PATCH">PATCH</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+            </td>
+            <td>
+                <input type="text" style="width:100%;" placeholder="/url" value="${url}">
+            </td>
+        </tr>`).appendTo("#node-input-endpoints-container");
+        $(`#node-input-openapi-methods-${method}-${unique_id}`).val(method);
+        
+        //saving data to preserve values
+        try{
+            let endpoints = $("#node-input-hidddenendpointsdata").val();
+            if(endpoints.length !== 0){
+                endpoints = JSON.parse(endpoints);
+            }else {
+                endpoints = [];
+            }
+            endpoints.push({
+                "method": method,
+                "url": url,
+                "unique_id": unique_id
+            });
+            $("#node-input-hidddenendpointsdata").val(JSON.stringify(endpoints));
+        }catch(e){
+            console.log(e)
+        }
+    }
+</script>
+
+<script type="text/html" data-template-name="ignite-openapirouter">
+    <div class="form-row">
+        <label for="node-input-name">Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-docurl">URL</label>
+        <input type="text" id="node-input-docurl" value='' placeholder="https://your-appname.com/openapi/schema">
+    </div>
+    <div class="form-row">
+        <label for="node-input-readdoc">Action</label>
+        <button id="node-input-readdoc" onClick="readOpenApiDoc()" >Read Document and Generate API Endpoints</button>
+    </div>
+    <div class="form-row">
+        <h4 id="node-input-readdoc-msg" style="display:none;color:maroon;text-align:center;" ></h4>
+    </div>
+    <div style="width:100%;overflow-y:auto;height:250px;border:2px solid #f3f3f3">
+        <div class="form-row" id="node-input-endpoints-container-row">
+            <table style="width:100%" id="node-input-endpoints-container">
+                <thead>
+                    <tr style="width=100%;height:35px;background-color:#f3f3f3">
+                        <th style="width:25%">Method</th>
+                        <th style="width:75%">Url</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+    <div class="form-row">
+        <button onClick="pushToTable()">New Endpoint</button>
+        <button onClick="clearEndpointsData()" >Clear All</button>
+    </div>
+    <input type="hidden" id="node-input-hidddenendpointsdata" value=''>
+    <input type="hidden" id="node-input-outputs"/>
+    <input type="hidden" id="node-input-outputLabels"/>
+</script>
+
+<script type="text/html" data-help-name="ignite-openapirouter">
+    <p></p>
+</script>
