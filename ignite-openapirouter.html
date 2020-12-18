@@ -6,12 +6,21 @@
             name: { value: "" },
             docurl: { value: "" },
             hidddenendpointsdata : {value: ""},
-            outputs: { value: 1},
-            // outputLabels: { value: ["abcd"]}
+            outputs: { value: 1}
         },
         inputs: 0,
         outputs: 1,
-        // outputLabels: [],
+        outputLabels : function (index) { 
+            if(this.hidddenendpointsdata){
+                try{
+                    var data = JSON.parse(this.hidddenendpointsdata);
+                    return `${data[index].method} : ${data[index].url}`;
+                }catch(error){
+                    console.log(error);
+                    this.hidddenendpointsdata = ""
+                }
+            }
+        },
         icon: 'font-awesome/fa-tasks',
         label: function () {
             return this.name || "api router";
@@ -20,66 +29,39 @@
             if(this.hidddenendpointsdata){
                 try{
                     prepareEndpoints(JSON.parse(this.hidddenendpointsdata));
-                }catch(e){
-                    console.log(e);
+                }catch(error){
+                    console.log(error);
                     this.hidddenendpointsdata = ""
                 }
             }
         },
-        oneditsave : async function () {
-            await readAndSaveFinalData();
-            // this.outputLabels = ["abcd", "dodo", "pikachu"]
-            // this.generatejwt = $("#node-input-generatejwt").val() == "true";
-            // if(this.generatejwt)
-            // {
-            //     $("#node-input-outputs").val(JSON.stringify(1));
-            // }
-            // else
-            // {
-            //     $("#node-input-outputs").val(JSON.stringify(2));
-            // }
+        oneditsave : function () {
+            //clearing data from input field and restoring data to add manually added fields
+            $("#node-input-hidddenendpointsdata").val("");
+
+            //read data from table
+            $('#node-input-endpoints-container tr').each(function(){
+                let row = $(this);
+                var method_field  = row.find('select')
+                var url_field  = row.find('input')
+                if (method_field[0] && url_field[0]){
+                    let method = method_field[0].value;
+                    let url = url_field[0].value;
+                    let endpoint = {
+                        "method" : method,
+                        "url": url
+                    }
+                    saveDataToInputField(endpoint);
+                }
+            });
+
+            //setting the output points
+            let endpoints_data = $("#node-input-hidddenendpointsdata").val();
+            if(endpoints_data.length > 0){
+                $("#node-input-outputs").val((JSON.parse(endpoints_data)).length);
+            }
         }
     });
-
-    async function readAndSaveFinalData(){
-        //read data from table
-        $('#node-input-endpoints-container tr').each(function(){
-            let row = $(this);
-            // console.log(row[0].cells)
-            var method_field  = row.find('select')
-            let method = method_field[0].value;
-            var url_field  = row.find('input')
-            let url = url_field[0].value;
-            let endpoint = {
-                "methods" : method,
-                "url": url
-            }
-            console.log(endpoint)
-            // row.find('td').each(async function(){           
-            //     let column = $(this);
-            //     let method_field = column.find('select');
-            //     let url_field = column.find('input');
-
-            //     let method = '';
-            //     let url = '';
-            //     if(method_field.length > 0 ){
-            //         method = method_field[0].value
-            //     }
-            //     if(url_field.length > 0 ){
-            //         url = url_field[0].value
-            //     }
-            //     let items = {
-            //         "methods" : method,
-            //         "url": url
-            //     }
-            //     console.log(items)
-            // })
-        })
-
-        //set hidden field value to persist manually added routes
-        // $("#node-input-outputs").val(JSON.stringify(3));
-        // $("#node-input-outputLabels").val(JSON.stringify(["abcd", "dodo", "pikachu"]));
-    }
 
     async function readOpenApiDoc(){
         var openApiUrl = $('#node-input-docurl').val();
@@ -96,20 +78,21 @@
                     $('#node-input-readdoc-msg').hide();
                     var basePath = data.basePath;
                     var endpoints = Object.keys(data.paths);
-                    //transform data for populating
+
+                    //transform data for populating the endpoints table
                     endpoints_details = [];
                     for(let i in endpoints){
                         let methods = Object.keys(data.paths[endpoints[i]])
                         for(let j in methods){
                             item = {
-                                "index": `${i}${j}`,
                                 "method": methods[j],
                                 "url":  basePath ? `${basePath}${endpoints[i]}` : endpoints[i]
                             }
                             endpoints_details.push(item);
                         }
                     }
-                    //call the function to prepare endpoints
+
+                    //call the function to prepare endpoints > then populate the table
                     prepareEndpoints(endpoints_details);
                     return ;
                 }else{
@@ -124,11 +107,18 @@
             }
         }
     }
+    
+    //clears the table and values stored in hidden field
+    function clearEndpointsData(){
+        $("#node-input-endpoints-container").empty()
+        $("#node-input-hidddenendpointsdata").val("");
+        $("#node-input-outputs").val(1);
+    }
 
-    async function prepareEndpoints(data){
-        await clearEndpointsData()
+    function prepareEndpoints(data){
+        clearEndpointsData();
         for (let i in data){
-            var unique_id = Math.floor(1000 + Math.random() * 9000);
+            // var unique_id = Math.floor(1000 + Math.random() * 9000);
             let method = data[i].method.toUpperCase();
             let url = data[i].url;
 
@@ -137,19 +127,14 @@
             }
 
             //add the logic to clean endpoints here
-            pushToTable(method, url, unique_id);
+            pushToTable(method, url);
         }
     }
 
-    async function clearEndpointsData(){
-        $("#node-input-endpoints-container").empty()
-        $("#node-input-hidddenendpointsdata").val("");
-    }
 
-    function pushToTable(method="GET", url="", unique_id=""){
-        if(!unique_id){
-            unique_id = Math.floor(1000 + Math.random() * 9000);
-        }
+    function pushToTable(method="GET", url=""){
+        let unique_id = Math.floor(1000 + Math.random() * 9000);
+
         //inserting row into the table
         $(`<tr style="width=100%;height:35px;margin-top:5px;" id="node-input-openapi-endpoints-row-${unique_id}">
             <td>
@@ -168,6 +153,14 @@
         $(`#node-input-openapi-methods-${method}-${unique_id}`).val(method);
         
         //saving data to preserve values
+        let endpoint = {
+            "method": method,
+            "url": url
+        }
+        saveDataToInputField(endpoint);
+    }
+
+    function saveDataToInputField(endpoint){
         try{
             let endpoints = $("#node-input-hidddenendpointsdata").val();
             if(endpoints.length !== 0){
@@ -175,14 +168,10 @@
             }else {
                 endpoints = [];
             }
-            endpoints.push({
-                "method": method,
-                "url": url,
-                "unique_id": unique_id
-            });
+            endpoints.push(endpoint);
             $("#node-input-hidddenendpointsdata").val(JSON.stringify(endpoints));
         }catch(e){
-            console.log(e)
+            console.log("error saving data to input field", e)
         }
     }
 </script>
@@ -215,13 +204,12 @@
             </table>
         </div>
     </div>
-    <div class="form-row">
-        <button onClick="pushToTable()">New Endpoint</button>
-        <button onClick="clearEndpointsData()" >Clear All</button>
+    <div class="form-row" style="width:100%; margin-top:10px;display:flex;flex-direction:row;justify-content:space-between">
+        <button onClick="pushToTable()" style="width:49%">New Endpoint</button>
+        <button onClick="clearEndpointsData()" style="width:49%;background-color:#AD1625;border:1px solid #444;border-radius:3px">Clear All</button>
     </div>
     <input type="hidden" id="node-input-hidddenendpointsdata" value=''>
     <input type="hidden" id="node-input-outputs"/>
-    <!-- <input type="hidden" id="node-input-outputLabels"/> -->
 </script>
 
 <script type="text/html" data-help-name="ignite-openapirouter">
