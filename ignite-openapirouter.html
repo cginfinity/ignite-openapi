@@ -7,11 +7,11 @@
             docurl: { value: "" },
             hidddenendpointsdata : {value: ""},
             outputs: { value: 1},
-            outputLabels: { value: ["abcd"]}
+            // outputLabels: { value: ["abcd"]}
         },
         inputs: 0,
         outputs: 1,
-        outputLabels: [],
+        // outputLabels: [],
         icon: 'font-awesome/fa-tasks',
         label: function () {
             return this.name || "api router";
@@ -26,12 +26,9 @@
                 }
             }
         },
-
-        oneditsave : function () {
-            console.log("fucntion 1")
-
+        oneditsave : async function () {
             await readAndSaveFinalData();
-            this.outputLabels = ["abcd", "dodo", "pikachu"]
+            // this.outputLabels = ["abcd", "dodo", "pikachu"]
             // this.generatejwt = $("#node-input-generatejwt").val() == "true";
             // if(this.generatejwt)
             // {
@@ -46,18 +43,42 @@
 
     async function readAndSaveFinalData(){
         //read data from table
+        $('#node-input-endpoints-container tr').each(function(){
+            let row = $(this);
+            // console.log(row[0].cells)
+            var method_field  = row.find('select')
+            let method = method_field[0].value;
+            var url_field  = row.find('input')
+            let url = url_field[0].value;
+            let endpoint = {
+                "methods" : method,
+                "url": url
+            }
+            console.log(endpoint)
+            // row.find('td').each(async function(){           
+            //     let column = $(this);
+            //     let method_field = column.find('select');
+            //     let url_field = column.find('input');
+
+            //     let method = '';
+            //     let url = '';
+            //     if(method_field.length > 0 ){
+            //         method = method_field[0].value
+            //     }
+            //     if(url_field.length > 0 ){
+            //         url = url_field[0].value
+            //     }
+            //     let items = {
+            //         "methods" : method,
+            //         "url": url
+            //     }
+            //     console.log(items)
+            // })
+        })
 
         //set hidden field value to persist manually added routes
-        $("#node-input-outputs").val(JSON.stringify(3));
-        $("#node-input-outputLabels").val(JSON.stringify(["abcd", "dodo", "pikachu"]));
-    }
-
-    async function outputLabelsfxn(){
-        // console.log("2")
-        // //read data from table
-
-        // //set hidden field value to persist manually added routes
         // $("#node-input-outputs").val(JSON.stringify(3));
+        // $("#node-input-outputLabels").val(JSON.stringify(["abcd", "dodo", "pikachu"]));
     }
 
     async function readOpenApiDoc(){
@@ -200,7 +221,7 @@
     </div>
     <input type="hidden" id="node-input-hidddenendpointsdata" value=''>
     <input type="hidden" id="node-input-outputs"/>
-    <input type="hidden" id="node-input-outputLabels"/>
+    <!-- <input type="hidden" id="node-input-outputLabels"/> -->
 </script>
 
 <script type="text/html" data-help-name="ignite-openapirouter">
