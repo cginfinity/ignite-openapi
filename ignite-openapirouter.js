@@ -115,7 +115,7 @@ module.exports = function(RED)
 
         return wrapper;
     }
-    function createResponseWrapper(node,res) {
+    async function createResponseWrapper(node,res) {
         var wrapper = {
             _res: res
         };
@@ -166,17 +166,24 @@ module.exports = function(RED)
 
     function openapirouter(config) {
         RED.nodes.createNode(this, config);
-        // node.docurl = config.docurl;
-        // node.endpoint_settings = config.endpoint_settings;
-        let endpoint_settings = JSON.parse(`[{"url":"/abcd","method":"get"},{"url":"/xyz","method":"put"}]`);
-        let endpoints = endpoint_settings;
+        // let endpoints = JSON.parse(`[{"url":"/abcd","method":"get"},{"url":"/xyz","method":"put"}]`);
+        let endpoints = config.hidddenendpointsdata;
+        if(endpoints){
+            endpoints = JSON.parse(endpoints);
+        }else{
+            endpoints = [];
+        }
+
+        //saving node endpoints data to retrive context to route request to specific endpoint
+        var nodeContext = this.context();
+        nodeContext.set("endpoints_data", JSON.stringify(endpoints));
+
         for (var i in endpoints){
-            // console.log(i)
+            this.method = endpoints[i].method.toLowerCase();
             this.url = endpoints[i].url;
             if (this.url[0] !== '/') {
                 this.url = '/'+this.url;
             }
-            this.method = endpoints[i].method;
             this.upload = false;
             // this.upload = n.upload;
             // this.swaggerDoc = n.swaggerDoc;
@@ -187,17 +194,72 @@ module.exports = function(RED)
                 node.warn(err);
                 res.sendStatus(500);
             };
-            // console.log(this.url, this.method)
-            this.callback = function(req,res) {
+
+
+            //creating an array with nulls for routing
+            // let j=0
+            // let routingWrapper = [];
+            // while(j<this.endpoint_count){
+            //     routingWrapper.push(null)
+            //     j +=1;
+            // }
+            // console.log(routingWrapper)
+
+
+            //creating routing array for requests
+            // let nodewrapper = [];
+            // let nodeInfo = [];
+            // nodewrapper.push(...routingWrapper)
+            // nodewrapper[i] = nodeInfo;
+            // console.log(nodewrapper)
+            // console.log(this.endpoint_count, i)
+            // var nodeContext = this.context();
+            // nodeContext.set("mydata", "fdjasdfsfbsafjb")
+
+
+            this.callback = async function(req,res) {
                 var msgid = RED.util.generateId();
                 res._msgid = msgid;
-                if (node.method.match(/^(post|delete|put|options|patch)$/)) {
-                    node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res),payload:req.body});
-                } else if (node.method == "get") {
-                    node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res),payload:req.query});
-                } else {
-                    node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res)});
+
+                //retrieving endpoints data from node and routing logic
+                let endpoints_data = nodeContext.get("endpoints_data");
+                // console.log(endpoints_data)
+                if(endpoints_data){
+                    endpoints_data = JSON.parse(endpoints_data);
+                }else{
+                    endpoints_data = [];
                 }
+
+                //extract the route and method to match
+
+                // creating an array with nulls for routing
+                let routingWrapper = [];
+                let j=0;
+                let route_number = 0;
+                while(j<endpoints_data.length){
+                    routingWrapper.push(null);
+                    //searching for the output endex to divert request to
+                    if(endpoints_data[j].method === "GET" && endpoints_data[j].url === "/ab"){
+                        route_number = j;
+                    }
+                    j +=1;
+                }
+
+                let nodeInfo = null;
+                if (node.method.match(/^(post|delete|put|options|patch)$/)) {
+                    nodeInfo = await {_msgid:msgid,req:req,res: await createResponseWrapper(node,res),payload:req.body};
+                    // node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res),payload:req.body});
+                } else if (node.method == "get") {
+                    nodeInfo = await {_msgid:msgid,req:req,res:await createResponseWrapper(node,res),payload:req.query};
+                    // node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res),payload:req.query});
+                } else {
+                    nodeInfo = await {_msgid:msgid,req:req,res:await createResponseWrapper(node,res)};
+                    // node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res)});
+                }
+
+                routingWrapper[route_number] = nodeInfo;
+                // console.log(routingWrapper)
+                node.send(routingWrapper)
             };
 
             var httpMiddleware = function(req,res,next) { next(); }
@@ -244,21 +306,16 @@ module.exports = function(RED)
 
             if (this.method.toLowerCase() == "get") {
                 RED.httpNode.get(this.url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,this.callback,this.errorHandler);
-                console.log("ep created", this.url, this.method)
             } else if (this.method.toLowerCase() == "post") {
                 RED.httpNode.post(this.url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,multipartParser,rawBodyParser,this.callback,this.errorHandler);
-                console.log("ep created", this.url, this.method)
             } else if (this.method.toLowerCase() == "put") {
                 RED.httpNode.put(this.url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,rawBodyParser,this.callback,this.errorHandler);
-                console.log("ep created", this.url, this.method)
             } else if (this.method.toLowerCase() == "patch") {
                 RED.httpNode.patch(this.url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,rawBodyParser,this.callback,this.errorHandler);
-                console.log("ep created", this.url, this.method)
             } else if (this.method.toLowerCase() == "delete") {
                 RED.httpNode.delete(this.url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,rawBodyParser,this.callback,this.errorHandler);
-                console.log("ep created", this.url, this.method)
             }
-
+            console.log("ep created", this.url, this.method)
         }
 
         this.on("close",function() {
@@ -270,14 +327,6 @@ module.exports = function(RED)
             });
         });
 
-        this.on('input', function (msg) {
-            if (node.generatejwt === true || node.generatejwt === 'true') {
-
-            }
-            else {
-               
-            }
-        });
     }
 
     RED.nodes.registerType('ignite-openapirouter', openapirouter);
