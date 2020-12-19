@@ -115,7 +115,7 @@ module.exports = function(RED)
 
         return wrapper;
     }
-    async function createResponseWrapper(node,res) {
+    function createResponseWrapper(node,res) {
         var wrapper = {
             _res: res
         };
@@ -217,7 +217,7 @@ module.exports = function(RED)
             // nodeContext.set("mydata", "fdjasdfsfbsafjb")
 
 
-            this.callback = async function(req,res) {
+            this.callback = function(req,res) {
                 var msgid = RED.util.generateId();
                 res._msgid = msgid;
 
@@ -247,13 +247,13 @@ module.exports = function(RED)
 
                 let nodeInfo = null;
                 if (node.method.match(/^(post|delete|put|options|patch)$/)) {
-                    nodeInfo = await {_msgid:msgid,req:req,res: await createResponseWrapper(node,res),payload:req.body};
+                    nodeInfo = {_msgid:msgid,req:req,res: createResponseWrapper(node,res),payload:req.body};
                     // node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res),payload:req.body});
                 } else if (node.method == "get") {
-                    nodeInfo = await {_msgid:msgid,req:req,res:await createResponseWrapper(node,res),payload:req.query};
+                    nodeInfo = {_msgid:msgid,req:req,res:createResponseWrapper(node,res),payload:req.query};
                     // node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res),payload:req.query});
                 } else {
-                    nodeInfo = await {_msgid:msgid,req:req,res:await createResponseWrapper(node,res)};
+                    nodeInfo = {_msgid:msgid,req:req,res:createResponseWrapper(node,res)};
                     // node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res)});
                 }
 
