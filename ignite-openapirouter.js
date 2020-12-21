@@ -113,10 +113,10 @@ module.exports = function(RED)
             }
         });
 
-
         return wrapper;
     }
-    function createResponseWrapper(node,res) {
+
+    async function createResponseWrapper(node,res) {
         var wrapper = {
             _res: res
         };
@@ -231,13 +231,13 @@ module.exports = function(RED)
 
                 let nodeInfo = null;
                 if (node.method.match(/^(post|delete|put|options|patch)$/)) {
-                    nodeInfo = {_msgid:msgid,req:req,res: createResponseWrapper(node,res),payload:req.body};
+                    nodeInfo = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res),payload:req.body};
                     // node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res),payload:req.body});
                 } else if (node.method == "get") {
-                    nodeInfo = {_msgid:msgid,req:req,res:createResponseWrapper(node,res),payload:req.query};
+                    nodeInfo = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res),payload:req.query};
                     // node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res),payload:req.query});
                 } else {
-                    nodeInfo = {_msgid:msgid,req:req,res:createResponseWrapper(node,res)};
+                    nodeInfo = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res)};
                     // node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res)});
                 }
 
