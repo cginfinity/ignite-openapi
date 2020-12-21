@@ -214,8 +214,8 @@ module.exports = function(RED)
 
                 // creating an array with nulls for routing
                 let routingWrapper = [];
+                let route_number = null;
                 let j=0;
-                let route_number = 0;
                 while(j<endpoints_data.length){
                     routingWrapper.push(null);
                     
@@ -223,26 +223,29 @@ module.exports = function(RED)
                     let url_pattern = await new UrlPattern(endpoints_data[j].url);
                     let result = url_pattern.match(url)
                     if(endpoints_data[j].method === method && (result !== null && result !== undefined)){
-                        route_number = j;
+                        if(route_number === null){
+                            route_number = j;
+                        }
                     }
 
                     j +=1;
                 }
 
-                let nodeInfo = null;
+                let msg = null;
                 if (node.method.match(/^(post|delete|put|options|patch)$/)) {
-                    nodeInfo = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res),payload:req.body};
-                    // node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res),payload:req.body});
+                    msg = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res),payload:req.body};
                 } else if (node.method == "get") {
-                    nodeInfo = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res),payload:req.query};
-                    // node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res),payload:req.query});
+                    msg = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res),payload:req.query};
                 } else {
-                    nodeInfo = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res)};
-                    // node.send({_msgid:msgid,req:req,res:createResponseWrapper(node,res)});
+                    msg = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res)};
                 }
 
-                routingWrapper[route_number] = nodeInfo;
-                node.send(routingWrapper)
+                if(route_number !== null){
+                    routingWrapper[route_number] = msg;
+                    // setTimeout(function(){
+                    node.send(routingWrapper)
+                    // }, 300);
+                }
             };
 
             var httpMiddleware = function(req,res,next) { next(); }
