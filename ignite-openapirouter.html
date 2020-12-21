@@ -118,19 +118,25 @@
     function prepareEndpoints(data){
         clearEndpointsData();
         for (let i in data){
-            // var unique_id = Math.floor(1000 + Math.random() * 9000);
             let method = data[i].method.toUpperCase();
             let url = data[i].url;
 
+            //Adding fornward slaces to path if not present
             if(url.slice(0,1) !== "/"){
                 url = `/${url}`
             }
 
-            //add the logic to clean endpoints here
+            //converting swagger url ro express compatible url
+            if(url.includes('{') && url.includes('{')){
+                //changing opening brace { with :
+                url = url.replaceAll('{',':');
+                //removing ending brace}
+                url = url.replaceAll('}','');
+            }
+            
             pushToTable(method, url);
         }
     }
-
 
     function pushToTable(method="GET", url=""){
         let unique_id = Math.floor(1000 + Math.random() * 9000);

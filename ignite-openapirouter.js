@@ -11,6 +11,7 @@ module.exports = function(RED)
     var mediaTyper = require('media-typer');
     var isUtf8 = require('is-utf8');
     var hashSum = require("hash-sum");
+    var UrlPattern = require('url-pattern');
 
     function rawBodyParser(req, res, next) {
         if (req.skipRawBodyParser) { next(); } // don't parse this if told to skip
@@ -166,7 +167,7 @@ module.exports = function(RED)
 
     function openapirouter(config) {
         RED.nodes.createNode(this, config);
-        // let endpoints = JSON.parse(`[{"url":"/abcd","method":"get"},{"url":"/xyz","method":"put"}]`);
+
         let endpoints = config.hidddenendpointsdata;
         if(endpoints){
             endpoints = JSON.parse(endpoints);
@@ -195,42 +196,21 @@ module.exports = function(RED)
                 res.sendStatus(500);
             };
 
-
-            //creating an array with nulls for routing
-            // let j=0
-            // let routingWrapper = [];
-            // while(j<this.endpoint_count){
-            //     routingWrapper.push(null)
-            //     j +=1;
-            // }
-            // console.log(routingWrapper)
-
-
-            //creating routing array for requests
-            // let nodewrapper = [];
-            // let nodeInfo = [];
-            // nodewrapper.push(...routingWrapper)
-            // nodewrapper[i] = nodeInfo;
-            // console.log(nodewrapper)
-            // console.log(this.endpoint_count, i)
-            // var nodeContext = this.context();
-            // nodeContext.set("mydata", "fdjasdfsfbsafjb")
-
-
-            this.callback = function(req,res) {
+            this.callback = async function(req,res) {
                 var msgid = RED.util.generateId();
                 res._msgid = msgid;
 
                 //retrieving endpoints data from node and routing logic
-                let endpoints_data = nodeContext.get("endpoints_data");
-                // console.log(endpoints_data)
+                let endpoints_data = await nodeContext.get("endpoints_data");
                 if(endpoints_data){
                     endpoints_data = JSON.parse(endpoints_data);
                 }else{
                     endpoints_data = [];
                 }
 
-                //extract the route and method to match
+                //req parameters to match for routing
+                let method = req.method;
+                let url = req.path;
 
                 // creating an array with nulls for routing
                 let routingWrapper = [];
@@ -238,10 +218,14 @@ module.exports = function(RED)
                 let route_number = 0;
                 while(j<endpoints_data.length){
                     routingWrapper.push(null);
+                    
                     //searching for the output endex to divert request to
-                    if(endpoints_data[j].method === "GET" && endpoints_data[j].url === "/ab"){
+                    let url_pattern = await new UrlPattern(endpoints_data[j].url);
+                    let result = url_pattern.match(url)
+                    if(endpoints_data[j].method === method && (result !== null && result !== undefined)){
                         route_number = j;
                     }
+
                     j +=1;
                 }
 
@@ -258,7 +242,6 @@ module.exports = function(RED)
                 }
 
                 routingWrapper[route_number] = nodeInfo;
-                // console.log(routingWrapper)
                 node.send(routingWrapper)
             };
 
@@ -315,7 +298,6 @@ module.exports = function(RED)
             } else if (this.method.toLowerCase() == "delete") {
                 RED.httpNode.delete(this.url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,rawBodyParser,this.callback,this.errorHandler);
             }
-            console.log("ep created", this.url, this.method)
         }
 
         this.on("close",function() {
