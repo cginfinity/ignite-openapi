@@ -231,20 +231,20 @@ module.exports = function(RED)
                     j +=1;
                 }
 
-                let msg = null;
-                if (node.method.match(/^(post|delete|put|options|patch)$/)) {
-                    msg = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res),payload:req.body};
-                } else if (node.method == "get") {
-                    msg = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res),payload:req.query};
-                } else {
-                    msg = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res)};
-                }
-
+                //routing request only if a match was found
                 if(route_number !== null){
+
+                    let msg = null;
+                    if (method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE" || method === "OPTIONS" ) {
+                        msg = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res),payload:req.body};
+                    } else if (method == "GET") {
+                        msg = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res),payload:req.query};
+                    } else {
+                        msg = {_msgid:msgid,req:req,res: await createResponseWrapper(node,res)};
+                    }
+
                     routingWrapper[route_number] = msg;
-                    // setTimeout(function(){
-                    node.send(routingWrapper)
-                    // }, 300);
+                    node.send(routingWrapper);
                 }
             };
 
