@@ -193,7 +193,7 @@
     </div>
     <div class="form-row">
         <label for="node-input-readdoc">Action</label>
-        <button id="node-input-readdoc" onClick="readOpenApiDoc()" >Read Document and Generate API Endpoints</button>
+        <button id="node-input-readdoc" onClick="readOpenApiDoc()" >Load Specification</button>
     </div>
     <div class="form-row">
         <h4 id="node-input-readdoc-msg" style="display:none;color:maroon;text-align:center;" ></h4>
@@ -212,7 +212,7 @@
     </div>
     <div class="form-row" style="width:100%; margin-top:10px;display:flex;flex-direction:row;justify-content:space-between">
         <button onClick="pushToTable()" style="width:49%">New Endpoint</button>
-        <button onClick="clearEndpointsData()" style="width:49%;background-color:#AD1625;border:1px solid #444;border-radius:3px">Clear All</button>
+        <button onClick="clearEndpointsData()" style="width:49%;">Clear All</button>
     </div>
     <input type="hidden" id="node-input-hidddenendpointsdata" value=''>
     <input type="hidden" id="node-input-outputs"/>
