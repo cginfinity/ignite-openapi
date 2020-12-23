@@ -5,19 +5,19 @@
         defaults: {
             name: { value: "" },
             docurl: { value: "" },
-            hidddenendpointsdata : {value: ""},
+            hiddenendpointsdata : {value: ""},
             outputs: { value: 1}
         },
         inputs: 0,
         outputs: 1,
         outputLabels : function (index) { 
-            if(this.hidddenendpointsdata){
+            if(this.hiddenendpointsdata){
                 try{
-                    var data = JSON.parse(this.hidddenendpointsdata);
+                    var data = JSON.parse(this.hiddenendpointsdata);
                     return `${data[index].method} : ${data[index].url}`;
                 }catch(error){
                     console.log(error);
-                    this.hidddenendpointsdata = ""
+                    this.hiddenendpointsdata = ""
                 }
             }
         },
@@ -26,18 +26,18 @@
             return this.name || "api router";
         },
         oneditprepare : function () {
-            if(this.hidddenendpointsdata){
+            if(this.hiddenendpointsdata){
                 try{
-                    prepareEndpoints(JSON.parse(this.hidddenendpointsdata));
+                    prepareEndpoints(JSON.parse(this.hiddenendpointsdata));
                 }catch(error){
                     console.log(error);
-                    this.hidddenendpointsdata = ""
+                    this.hiddenendpointsdata = ""
                 }
             }
         },
         oneditsave : function () {
             //clearing data from input field and restoring data to add manually added fields
-            $("#node-input-hidddenendpointsdata").val("");
+            $("#node-input-hiddenendpointsdata").val("");
 
             //read data from table
             $('#node-input-endpoints-container tr').each(function(){
@@ -56,7 +56,7 @@
             });
 
             //setting the output points
-            let endpoints_data = $("#node-input-hidddenendpointsdata").val();
+            let endpoints_data = $("#node-input-hiddenendpointsdata").val();
             if(endpoints_data.length > 0){
                 $("#node-input-outputs").val((JSON.parse(endpoints_data)).length);
             }
@@ -111,7 +111,7 @@
     //clears the table and values stored in hidden field
     function clearEndpointsData(){
         $("#node-input-endpoints-container").empty()
-        $("#node-input-hidddenendpointsdata").val("");
+        $("#node-input-hiddenendpointsdata").val("");
         $("#node-input-outputs").val(1);
     }
 
@@ -168,14 +168,14 @@
 
     function saveDataToInputField(endpoint){
         try{
-            let endpoints = $("#node-input-hidddenendpointsdata").val();
+            let endpoints = $("#node-input-hiddenendpointsdata").val();
             if(endpoints.length !== 0){
                 endpoints = JSON.parse(endpoints);
             }else {
                 endpoints = [];
             }
             endpoints.push(endpoint);
-            $("#node-input-hidddenendpointsdata").val(JSON.stringify(endpoints));
+            $("#node-input-hiddenendpointsdata").val(JSON.stringify(endpoints));
         }catch(e){
             console.log("error saving data to input field", e)
         }
@@ -214,7 +214,7 @@
         <button onClick="pushToTable()" style="width:49%">New Endpoint</button>
         <button onClick="clearEndpointsData()" style="width:49%;">Clear All</button>
     </div>
-    <input type="hidden" id="node-input-hidddenendpointsdata" value=''>
+    <input type="hidden" id="node-input-hiddenendpointsdata" value=''>
     <input type="hidden" id="node-input-outputs"/>
 </script>
 

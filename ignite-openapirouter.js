@@ -168,11 +168,11 @@ module.exports = function(RED)
     function openapirouter(config) {
         RED.nodes.createNode(this, config);
 
-        let endpoints = config.hidddenendpointsdata;
+        let endpoints = config.hiddenendpointsdata;
         endpoints ? endpoints = JSON.parse(endpoints) : endpoints = []
         
         //saving node endpoints data to retrive context to route request to specific endpoint
-        this.hidddenendpointsdata = endpoints;
+        this.hiddenendpointsdata = endpoints;
         // var nodeContext = this.context();
         // nodeContext.set("endpoints_data", JSON.stringify(endpoints));
 
@@ -198,7 +198,7 @@ module.exports = function(RED)
 
                 //retrieving endpoints data from node and routing logic
                 // let endpoints_data = await nodeContext.get("endpoints_data");
-                let endpoints_data = node.hidddenendpointsdata;
+                let endpoints_data = node.hiddenendpointsdata;
                 // console.log(endpoints_data)
                 // if(endpoints_data){
                 //     endpoints_data = JSON.parse(endpoints_data);
@@ -303,7 +303,7 @@ module.exports = function(RED)
 
         this.on("close",function() {
             var node = this;
-            this.hidddenendpointsdata.forEach(function(ep,epi, eps){
+            this.hiddenendpointsdata.forEach(function(ep,epi, eps){
                 RED.httpNode._router.stack.forEach(function(route,i,routes) {
                     if (route.route && route.route.path === ep.url && route.route.methods[ep.method.toLowerCase()]) {
                         routes.splice(i,1);
