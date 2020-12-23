@@ -169,26 +169,22 @@ module.exports = function(RED)
         RED.nodes.createNode(this, config);
 
         let endpoints = config.hidddenendpointsdata;
-        if(endpoints){
-            endpoints = JSON.parse(endpoints);
-        }else{
-            endpoints = [];
-        }
-
+        endpoints ? endpoints = JSON.parse(endpoints) : endpoints = []
+        
         //saving node endpoints data to retrive context to route request to specific endpoint
-        var nodeContext = this.context();
-        nodeContext.set("endpoints_data", JSON.stringify(endpoints));
+        this.hidddenendpointsdata = endpoints;
+        // var nodeContext = this.context();
+        // nodeContext.set("endpoints_data", JSON.stringify(endpoints));
 
         for (var i in endpoints){
-            this.method = endpoints[i].method.toLowerCase();
-            this.url = endpoints[i].url;
-            if (this.url[0] !== '/') {
-                this.url = '/'+this.url;
+            var current_method = endpoints[i].method.toLowerCase();
+            var current_url = endpoints[i].url;
+            if (current_url[0] !== '/') {
+                current_url = '/'+current_url;
             }
             this.upload = false;
             // this.upload = n.upload;
             // this.swaggerDoc = n.swaggerDoc;
-
             var node = this;
 
             this.errorHandler = function(err,req,res,next) {
@@ -201,12 +197,14 @@ module.exports = function(RED)
                 res._msgid = msgid;
 
                 //retrieving endpoints data from node and routing logic
-                let endpoints_data = await nodeContext.get("endpoints_data");
-                if(endpoints_data){
-                    endpoints_data = JSON.parse(endpoints_data);
-                }else{
-                    endpoints_data = [];
-                }
+                // let endpoints_data = await nodeContext.get("endpoints_data");
+                let endpoints_data = node.hidddenendpointsdata;
+                // console.log(endpoints_data)
+                // if(endpoints_data){
+                //     endpoints_data = JSON.parse(endpoints_data);
+                // }else{
+                //     endpoints_data = [];
+                // }
 
                 //req parameters to match for routing
                 let method = req.method;
@@ -290,16 +288,16 @@ module.exports = function(RED)
                 };
             }
 
-            if (this.method.toLowerCase() == "get") {
-                RED.httpNode.get(this.url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,this.callback,this.errorHandler);
-            } else if (this.method.toLowerCase() == "post") {
-                RED.httpNode.post(this.url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,multipartParser,rawBodyParser,this.callback,this.errorHandler);
-            } else if (this.method.toLowerCase() == "put") {
-                RED.httpNode.put(this.url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,rawBodyParser,this.callback,this.errorHandler);
-            } else if (this.method.toLowerCase() == "patch") {
-                RED.httpNode.patch(this.url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,rawBodyParser,this.callback,this.errorHandler);
-            } else if (this.method.toLowerCase() == "delete") {
-                RED.httpNode.delete(this.url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,rawBodyParser,this.callback,this.errorHandler);
+            if (current_method.toLowerCase() == "get") {
+                RED.httpNode.get(current_url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,this.callback,this.errorHandler);
+            } else if (current_method.toLowerCase() == "post") {
+                RED.httpNode.post(current_url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,multipartParser,rawBodyParser,this.callback,this.errorHandler);
+            } else if (current_method.toLowerCase() == "put") {
+                RED.httpNode.put(current_url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,rawBodyParser,this.callback,this.errorHandler);
+            } else if (current_method.toLowerCase() == "patch") {
+                RED.httpNode.patch(current_url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,rawBodyParser,this.callback,this.errorHandler);
+            } else if (current_method.toLowerCase() == "delete") {
+                RED.httpNode.delete(current_url,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,rawBodyParser,this.callback,this.errorHandler);
             }
         }
 
