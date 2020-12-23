@@ -302,12 +302,13 @@ module.exports = function(RED)
         }
 
         this.on("close",function() {
-            console.log("test, issue might be here, need to pop all routesfrom stack")
             var node = this;
-            RED.httpNode._router.stack.forEach(function(route,i,routes) {
-                if (route.route && route.route.path === node.url && route.route.methods[node.method]) {
-                    routes.splice(i,1);
-                }
+            this.hidddenendpointsdata.forEach(function(ep,epi, eps){
+                RED.httpNode._router.stack.forEach(function(route,i,routes) {
+                    if (route.route && route.route.path === ep.url && route.route.methods[ep.method.toLowerCase()]) {
+                        routes.splice(i,1);
+                    }
+                });
             });
         });
 
