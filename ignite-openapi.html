@@ -300,6 +300,19 @@
       addItem: (row, i, param) => addNewRow(row, i, param, node) 
     })
 
+    $('#node-input-explorerWithDesigner').on("click", function () {
+      const openApiUrl = encodeURI($('#node-input-openApiUrl').val())
+      if (openApiUrl === undefined || openApiUrl === '') {
+          showError("Please enter valid url!")
+          return
+      }
+      else {
+        let CGIgniteDesingerURL = "https://designer.cgignite.io/"
+        let finalURL = CGIgniteDesingerURL + "?url=" + openApiUrl;
+        window.open(finalURL);
+      } 
+    })
+
     // Warning: Change can be triggered by opening the node!
     $('#node-input-api').change(function(){
       if (!openingNode) createOperationSelector(node, apiList)
@@ -435,6 +448,9 @@
       <select type="text" id="node-input-contentType" >
           <option value=""></option>
       </select>
+  </div>
+  <div class="form-row">
+    <button type="button" id="node-input-explorerWithDesigner" class="btn">Explore with Designer</button>
   </div>
     <hr>
     <!-- The parameters-list -->
