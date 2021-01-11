@@ -26,6 +26,7 @@
     $('.nodeError').html(message)
     $("#ignite-openapi").find('[class*="loader"]').css('display', 'none')
     $("#ignite-openapi").find('[class*="success-text"]').css('display', 'none')
+    $("#ignite-openapi").find('[class*="node-input-explorerWithDesigner"]').css('display', 'none')
   }
   
   function objectHasValues(object) {
@@ -352,6 +353,8 @@
             return
         }
         $("#ignite-openapi").find('[class*="loader"]').css('display', 'block')
+        $("#ignite-openapi").find('[class*="node-input-explorerWithDesigner"]').css('display', 'none')
+        $("#ignite-openapi").find('[class*="success-text"]').css('display', 'none')
         setTimeout(() => {
             createApiList(node, apiList).then((value) => {
                 if (value === undefined) {
@@ -364,7 +367,7 @@
                 createOperationSelector(node, apiList)
                 $("#ignite-openapi").find('[class*="loader"]').css('display', 'none')
                 $("#ignite-openapi").find('[class*="success-text"]').css('display', 'block')
-                
+                $("#ignite-openapi").find('[class*="node-input-explorerWithDesigner"]').css('display', 'block')
             }).catch((e) => showError(e))
         }, 2000)
     })
@@ -409,17 +412,37 @@
 <script type="text/html" data-template-name="ignite-openapi">
   <div id="ignite-openapi">
     <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+      <label for="node-input-name">Name</label>
+      <input type="text" id="node-input-name" placeholder="Name">
     </div>
-    <div class="form-row inputUrl">
-        <label for="node-input-openApiUrl"><i class="icon-tag"></i> URL</label>
-        <input type="text" id="node-input-openApiUrl">
-        <button type="button" id="node-input-createOpenApi-ApiFromUrl" class="btn">read</button>
-        <div>
-            <span class="loader"></span>
-        </div>
+    <div class="form-row">
+      <label for="node-input-openApiUrl">URL</label>
+      <input type="text" id="node-input-openApiUrl" value='' placeholder="https://your-appname.com/openapi/schema">
     </div>
+    
+    <div class="form-row">
+      <table>
+        <tr>
+            <td class="node-td-action">
+              <label for="node-input-readdoc">Action</label>
+            </td>
+            <td class="node-td-load">
+              <button type="button" id="node-input-createOpenApi-ApiFromUrl" class="btn" title="Load data from OpenAPI URL" >Load Specification</button>
+            </td>
+            <td class="node-td-success">
+              <span class="loader" title="Data is loading..."></span>
+              <span class="success-text" title="Data loaded successfully"><i class="fa fa-check" aria-hidden="true"></i></span>
+            </td>
+            <td class="node-td-explorer">
+              <div class="node-td-right">
+                <span class="nodeError"></span>
+                <button type="button" id="node-input-explorerWithDesigner" class="node-input-explorerWithDesigner" title="Load and view data in Ignite Desinger">View in Designer</button>
+              </div>
+            </td>
+        </tr>
+      </table>
+    </div>
+
     <div class="form-row">
       <label for="node-input-errorHandling"><i class="icon-tag"></i> Error handling</label>
       <select type="text" id="node-input-errorHandling" >
@@ -428,7 +451,7 @@
           <option value="throw exception">Throw an exception</option>
       </select>
     </div>
-    <div class="nodeError"></div><span class="success-text">Success</span>
+    
     <hr>
     <div class="form-row">
         <label for="node-input-api"><i class="icon-tag"></i> API tag</label>
@@ -449,9 +472,6 @@
           <option value=""></option>
       </select>
   </div>
-  <div class="form-row">
-    <button type="button" id="node-input-explorerWithDesigner" class="btn">Explore with Designer</button>
-  </div>
     <hr>
     <!-- The parameters-list -->
     <div class="node-row-parameters">
@@ -471,11 +491,11 @@
             <dt>Name
                 <span class="property-type">string</span>
             </dt>
-            <dd> set a manuell name for the node. If no name is set, the node sets the selected operation name.</dd>
+            <dd> set a manual name for the node. If no name is set, the node sets the selected operation name.</dd>
             <dt>URL
               <span class="property-type">string</span>
             </dt>
-            <dd> set the full url domain name (incl. http:// / https://) for the OpenAPI document. By clicking on 'read' it will build the API and operation Selectors.</dd>
+            <dd> set the full url domain name (incl. http:// / https://) for the OpenAPI document. By clicking on 'Read' it will build the API and operation Selectors.</dd>
             <dt>API tag
               <span class="property-type">enum</span>
             </dt>
@@ -513,6 +533,12 @@
       <dd> The flow will throw an exception. This exception can be catched by the 'catch' node.</dd>
     </dl>
 
+    <h3>View in Desinger</h3>
+    <dl class="message-properties">
+      <dt>Button Click <span class="property-type"></span> </dt>
+      <dd>By clicking on 'View in Desinger' it will load the OpenAPI in Ignite Desinger in a new tab.</dd>
+    </dl>
+
     <h3>References</h3>
         <ul>
             <li><a href="https://www.npmjs.com/package/swagger-client">Based on npm swagger-client</a> - which does almost all the magic here</li>
@@ -530,7 +556,7 @@
   #ignite-openapi #node-input-parameters-container {
     min-height: 300px;
     height: 600px;
-    min-width: 650px;
+    min-width: 500px;
   }
   #ignite-openapi .red-ui-editableList-item-content { 
     display: flex;
@@ -551,6 +577,10 @@
         -webkit-animation: spin 1s linear infinite; /* Safari */
         animation: spin 1s linear infinite;
     }
+    .node-input-explorerWithDesigner{
+      display: none;
+      width:140px;
+    }
 
     .success-text {
         color: green;
@@ -560,6 +590,30 @@
         line-height: 20px;
         display: none;
         text-shadow: 1px 1px rgba(250,250,250,.3);
+    }
+
+    .node-td-action{
+      width:102px;
+    }
+
+    .node-td-load{
+      width:142px;
+    }
+
+    .node-td-success{
+      width:16px;
+    }
+
+    .node-td-right{
+      float: right;
+    }
+
+    .node-td-explorer{
+      width:195px;
+    }
+
+    .node-input-NameURL{
+      width: 360px;
     }
 
     /* Safari */
