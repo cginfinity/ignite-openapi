@@ -34,6 +34,24 @@
                     this.hiddenendpointsdata = ""
                 }
             }
+
+            $('#node-input-explorerWithDesigner').on("click", function () {
+                const openApiUrl = encodeURI($('#node-input-docurl').val())
+                if (openApiUrl === undefined || openApiUrl === '') {
+                    $('#node-input-readdoc-msg').html(`Please provide a valid Open Api Url.`);
+                    $('#node-input-readdoc-msg').show();
+                    $("#ignite-openapirouter").find('[class*="node-input-explorerWithDesigner"]').css('display', 'none')
+                    $("#ignite-openapirouter").find('[class*="success-text"]').css('display', 'none')
+                    $("#ignite-openapirouter").find('[class*="loader"]').css('display', 'none')
+                    return
+                }
+                else {
+                let CGIgniteDesingerURL = "https://designer.cgignite.io/"
+                let finalURL = CGIgniteDesingerURL + "?url=" + openApiUrl;
+                window.open(finalURL);
+                } 
+            })
+
         },
         oneditsave : function () {
             //clearing data from input field and restoring data to add manually added fields
@@ -68,12 +86,20 @@
         if (openApiUrl === undefined || openApiUrl === '') {
                 $('#node-input-readdoc-msg').html(`Please provide a valid Open Api Url.`);
                 $('#node-input-readdoc-msg').show();
+                $("#ignite-openapirouter").find('[class*="node-input-explorerWithDesigner"]').css('display', 'none')
+                $("#ignite-openapirouter").find('[class*="success-text"]').css('display', 'none')
+                $("#ignite-openapirouter").find('[class*="loader"]').css('display', 'none')
             return
         }else{
             try{
+                $("#ignite-openapirouter").find('[class*="node-input-explorerWithDesigner"]').css('display', 'none')
+                $("#ignite-openapirouter").find('[class*="loader"]').css('display', 'block')
+                $("#ignite-openapirouter").find('[class*="success-text"]').css('display', 'none')
+                
                 var response = await fetch(openApiUrl);
                 var data = await response.json();
                 if(data){
+                    setTimeout(() => {
                     $('#node-input-readdoc-msg').html(``);
                     $('#node-input-readdoc-msg').hide();
                     var basePath = data.basePath;
@@ -94,11 +120,17 @@
 
                     //call the function to prepare endpoints > then populate the table
                     prepareEndpoints(endpoints_details);
+                    $("#ignite-openapirouter").find('[class*="node-input-explorerWithDesigner"]').css('display', 'block')
+                    $("#ignite-openapirouter").find('[class*="loader"]').css('display', 'none')
+                    $("#ignite-openapirouter").find('[class*="success-text"]').css('display', 'block')
+                    }, 2000)
+                    
                     return ;
                 }else{
                     $('#node-input-readdoc-msg').html(`No Data Recieved from Url.`);
                     $('#node-input-readdoc-msg').show();
                 }
+            
             }catch(error){
                 console.log(error);
                 $('#node-input-readdoc-msg').html(`Error while processing data.`);
@@ -113,6 +145,9 @@
         $("#node-input-endpoints-container").empty()
         $("#node-input-hiddenendpointsdata").val("");
         $("#node-input-outputs").val(1);
+        $("#ignite-openapirouter").find('[class*="node-input-explorerWithDesigner"]').css('display', 'none')
+        $("#ignite-openapirouter").find('[class*="loader"]').css('display', 'none')
+        $("#ignite-openapirouter").find('[class*="success-text"]').css('display', 'none')
     }
 
     function prepareEndpoints(data){
@@ -188,41 +223,174 @@
 </script>
 
 <script type="text/html" data-template-name="ignite-openapirouter">
-    <div class="form-row">
-        <label for="node-input-name">Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
-    </div>
-    <div class="form-row">
-        <label for="node-input-docurl">URL</label>
-        <input type="text" id="node-input-docurl" value='' placeholder="https://your-appname.com/openapi/schema">
-    </div>
-    <div class="form-row">
-        <label for="node-input-readdoc">Action</label>
-        <button id="node-input-readdoc" onClick="readOpenApiDoc()" >Load Specification</button>
-    </div>
-    <div class="form-row">
-        <h4 id="node-input-readdoc-msg" style="display:none;color:maroon;text-align:center;" ></h4>
-    </div>
-    <div style="width:100%;overflow-y:auto;height:250px;border:2px solid #f3f3f3">
-        <div class="form-row" id="node-input-endpoints-container-row">
-            <table style="width:100%" id="node-input-endpoints-container">
-                <thead>
-                    <tr style="width=100%;height:35px;background-color:#f3f3f3">
-                        <th style="width:25%">Method</th>
-                        <th style="width:75%">Url</th>
-                    </tr>
-                </thead>
-            </table>
+    <div id="ignite-openapirouter">
+        <div class="form-row">
+            <label for="node-input-name">Name</label>
+            <input type="text" id="node-input-name" placeholder="Name">
         </div>
+        <div class="form-row">
+            <label for="node-input-docurl">URL</label>
+            <input type="text" id="node-input-docurl" value='' placeholder="https://your-appname.com/openapi/schema">
+        </div>
+
+        
+
+        <div class="form-row">
+            <table>
+                <tr>
+                    <td class="node-td-action">
+                        <label for="node-input-readdoc">Action</label>
+                    </td>
+                    <td class="node-td-load">
+                        <button id="node-input-readdoc" onClick="readOpenApiDoc()" >Load Specification</button>
+                    </td>
+                    <td class="node-td-success">
+                        <span class="loader" title="Data is loading..."></span>
+                        <span class="success-text" title="Data loaded successfully"><i class="fa fa-check" aria-hidden="true"></i></span>
+                    </td>
+                    <td class="node-td-explorerRouter">
+                        <div class="node-td-right">
+                            <span class="nodeError"></span>
+                            <button type="button" id="node-input-explorerWithDesigner" class="node-input-explorerWithDesigner" title="Load and view data in Ignite Desinger">View in Designer</button>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            
+            
+        </div>
+        <div class="form-row">
+            <h4 id="node-input-readdoc-msg" style="display:none;color:maroon;text-align:center;" ></h4>
+        </div>
+        <div style="width:100%;overflow-y:auto;height:250px;border:2px solid #f3f3f3">
+            <div class="form-row" id="node-input-endpoints-container-row">
+                <table style="width:100%" id="node-input-endpoints-container">
+                    <thead>
+                        <tr style="width=100%;height:35px;background-color:#f3f3f3">
+                            <th style="width:25%">Method</th>
+                            <th style="width:75%">Url</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <div class="form-row" style="width:100%; margin-top:10px;display:flex;flex-direction:row;justify-content:space-between">
+            <button onClick="pushToTable()" style="width:49%">New Endpoint</button>
+            <button onClick="clearEndpointsData()" style="width:49%;">Clear All</button>
+        </div>
+        <input type="hidden" id="node-input-hiddenendpointsdata" value=''>
+        <input type="hidden" id="node-input-outputs"/>
     </div>
-    <div class="form-row" style="width:100%; margin-top:10px;display:flex;flex-direction:row;justify-content:space-between">
-        <button onClick="pushToTable()" style="width:49%">New Endpoint</button>
-        <button onClick="clearEndpointsData()" style="width:49%;">Clear All</button>
-    </div>
-    <input type="hidden" id="node-input-hiddenendpointsdata" value=''>
-    <input type="hidden" id="node-input-outputs"/>
 </script>
 
 <script type="text/html" data-help-name="ignite-openapirouter">
-    <p></p>
+    <p>Use OpenAPI Router with Node-Red.</p>
+    <h3>Inputs</h3>
+        <dl class="message-properties">
+            <dt>Name
+                <span class="property-type">string</span>
+            </dt>
+            <dd> set a manual name for the node. If no name is set, the node sets the selected operation name.</dd>
+            <dt>URL
+              <span class="property-type">string</span>
+            </dt>
+            <dd> set the full url domain name (incl. http:// / https://) for the OpenAPI document. By clicking on 'Load Specification' it will load the end points from OpenAPI URL and create those end point inside Ignire Runtime.</dd>
+        </dl>
+    
+     <h3>Outputs</h3>
+      <dl class="message-properties">
+        <dt>API End Point<span class="property-type">Http End Point</span>
+          <dd> Http End point will get created.</dd>
+        </dt>
+      </dl>
+      
+      <h3>View in Desinger</h3>
+      <dl class="message-properties">
+        <dt>Button Click <span class="property-type"></span> </dt>
+        <dd>By clicking on 'View in Desinger' it will load the OpenAPI in Ignite Desinger in a new tab.</dd>
+      </dl>
+
+    <h3>References</h3>
+        <ul>
+            <li><a href="https://www.npmjs.com/package/swagger-client">Based on npm swagger-client</a> - which does almost all the magic here</li>
+            <li><a>GitHub</a> - the nodes github repository</li>
+        </ul>
 </script>
+
+<style>
+
+    .node-input-explorerWithDesigner{
+      display: none;
+      width:140px;
+    }
+
+    #ignite-openapirouter {
+    min-height: 300px;
+    height: 600px;
+    min-width: 530px;
+    }
+
+    .node-td-action{
+      width:104px;
+    }
+
+    .node-td-load{
+      width:142px;
+    }
+
+    .node-td-success{
+      width:16px;
+    }
+
+    .node-td-right{
+      float: right;
+    }
+
+    .node-td-explorerRouter{
+      width:205px;
+    }
+
+    .success-text {
+        color: green;
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        font-weight: bold;
+        line-height: 20px;
+        display: none;
+        text-shadow: 1px 1px rgba(250,250,250,.3);
+    }
+
+    .loader {
+        border: 10px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 10px solid #3498db;
+        width: 0px;
+        height: 0px;
+        display: none;
+        -webkit-animation: spin 1s linear infinite; /* Safari */
+        animation: spin 1s linear infinite;
+    }
+
+    /* Safari */
+    @-webkit-keyframes spin {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+</style>
+
