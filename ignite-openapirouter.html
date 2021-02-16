@@ -5,17 +5,17 @@
         defaults: {
             name: { value: "" },
             docurl: { value: "" },
-            hiddenendpointsdata : {value: ""},
-            outputs: { value: 1}
+            hiddenendpointsdata: { value: "" },
+            outputs: { value: 1 }
         },
         inputs: 0,
         outputs: 1,
-        outputLabels : function (index) { 
-            if(this.hiddenendpointsdata){
-                try{
-                    var data = JSON.parse(this.hiddenendpointsdata);
+        outputLabels: function (index) {
+            if (this.hiddenendpointsdata) {
+                try {
+                    let data = JSON.parse(this.hiddenendpointsdata);
                     return `${data[index].method} : ${data[index].url}`;
-                }catch(error){
+                } catch (error) {
                     console.log(error);
                     this.hiddenendpointsdata = ""
                 }
@@ -25,11 +25,11 @@
         label: function () {
             return this.name || "api router";
         },
-        oneditprepare : function () {
-            if(this.hiddenendpointsdata){
-                try{
+        oneditprepare: function () {
+            if (this.hiddenendpointsdata) {
+                try {
                     prepareEndpoints(JSON.parse(this.hiddenendpointsdata));
-                }catch(error){
+                } catch (error) {
                     console.log(error);
                     this.hiddenendpointsdata = ""
                 }
@@ -37,36 +37,34 @@
 
             $('#node-input-explorerWithDesigner').on("click", function () {
                 const openApiUrl = encodeURI($('#node-input-docurl').val())
-                if (openApiUrl === undefined || openApiUrl === '') {
+                if (!openApiUrl) {
                     $('#node-input-readdoc-msg').html(`Please provide a valid Open Api Url.`);
                     $('#node-input-readdoc-msg').show();
                     $("#ignite-openapirouter").find('[class*="node-input-explorerWithDesigner"]').css('display', 'none')
                     $("#ignite-openapirouter").find('[class*="success-text"]').css('display', 'none')
                     $("#ignite-openapirouter").find('[class*="loader"]').css('display', 'none')
                     return
+                } else {
+                    let designerUrl = "https://designer.cgignite.io/"
+                    let finalURL = `${designerUrl}?url=${openApiUrl}&mode=view`;
+                    window.open(finalURL);
                 }
-                else {
-                let CGIgniteDesingerURL = "https://designer.cgignite.io/"
-                let finalURL = CGIgniteDesingerURL + "?url=" + openApiUrl + "&mode=view";
-                window.open(finalURL);
-                } 
             })
-
         },
-        oneditsave : function () {
+        oneditsave: function () {
             //clearing data from input field and restoring data to add manually added fields
             $("#node-input-hiddenendpointsdata").val("");
 
             //read data from table
-            $('#node-input-endpoints-container tr').each(function(){
+            $('#node-input-endpoints-container tr').each(function () {
                 let row = $(this);
-                var method_field  = row.find('select')
-                var url_field  = row.find('input')
-                if (method_field[0] && url_field[0]){
+                var method_field = row.find('select')
+                var url_field = row.find('input')
+                if (method_field[0] && url_field[0]) {
                     let method = method_field[0].value;
                     let url = url_field[0].value;
                     let endpoint = {
-                        "method" : method,
+                        "method": method,
                         "url": url
                     }
                     saveDataToInputField(endpoint);
@@ -75,31 +73,31 @@
 
             //setting the output points
             let endpoints_data = $("#node-input-hiddenendpointsdata").val();
-            if(endpoints_data.length > 0){
+            if (endpoints_data.length > 0) {
                 $("#node-input-outputs").val((JSON.parse(endpoints_data)).length);
             }
         }
     });
 
-    async function readOpenApiDoc(){
-        var openApiUrl = $('#node-input-docurl').val();
-        if (openApiUrl === undefined || openApiUrl === '') {
-                $('#node-input-readdoc-msg').html(`Please provide a valid Open Api Url.`);
-                $('#node-input-readdoc-msg').show();
-                $("#ignite-openapirouter").find('[class*="node-input-explorerWithDesigner"]').css('display', 'none')
-                $("#ignite-openapirouter").find('[class*="success-text"]').css('display', 'none')
-                $("#ignite-openapirouter").find('[class*="loader"]').css('display', 'none')
+    async function readOpenApiDoc() {
+        let openApiUrl = $('#node-input-docurl').val();
+        if (!openApiUrl) {
+            $('#node-input-readdoc-msg').html(`Please provide a valid Open Api Url.`);
+            $('#node-input-readdoc-msg').show();
+            $("#ignite-openapirouter").find('[class*="node-input-explorerWithDesigner"]').css('display', 'none')
+            $("#ignite-openapirouter").find('[class*="success-text"]').css('display', 'none')
+            $("#ignite-openapirouter").find('[class*="loader"]').css('display', 'none')
             return
-        }else{
-            try{
+        } else {
+            try {
                 $("#ignite-openapirouter").find('[class*="node-input-explorerWithDesigner"]').css('display', 'none')
                 $("#ignite-openapirouter").find('[class*="loader"]').css('display', 'block')
                 $("#ignite-openapirouter").find('[class*="success-text"]').css('display', 'none')
-                
-                var response = await fetch(openApiUrl);
-                var data = await response.json();
-                if(data){
-                    setTimeout(() => {
+
+                let response = await fetch(openApiUrl);
+                let data = await response.json();
+                if (data) {
+                    // setTimeout(() => {
                     $('#node-input-readdoc-msg').html(``);
                     $('#node-input-readdoc-msg').hide();
                     var basePath = data.basePath;
@@ -107,14 +105,17 @@
 
                     //transform data for populating the endpoints table
                     endpoints_details = [];
-                    for(let i in endpoints){
+                    for (let i in endpoints) {
                         let methods = Object.keys(data.paths[endpoints[i]])
-                        for(let j in methods){
-                            item = {
-                                "method": methods[j],
-                                "url":  basePath ? `${basePath}${endpoints[i]}` : endpoints[i]
+                        for (let j in methods) {
+                            let method = methods[j].toUpperCase();
+                            if (method === 'GET' || method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE') {
+                                item = {
+                                    "method": methods[j],
+                                    "url": basePath ? `${basePath}${endpoints[i]}` : endpoints[i]
+                                }
+                                endpoints_details.push(item);
                             }
-                            endpoints_details.push(item);
                         }
                     }
 
@@ -123,15 +124,15 @@
                     $("#ignite-openapirouter").find('[class*="node-input-explorerWithDesigner"]').css('display', 'block')
                     $("#ignite-openapirouter").find('[class*="loader"]').css('display', 'none')
                     $("#ignite-openapirouter").find('[class*="success-text"]').css('display', 'block')
-                    }, 2000)
-                    
-                    return ;
-                }else{
+                    // }, 2000)
+
+                    return;
+                } else {
                     $('#node-input-readdoc-msg').html(`No Data Recieved from Url.`);
                     $('#node-input-readdoc-msg').show();
                 }
-            
-            }catch(error){
+
+            } catch (error) {
                 console.log(error);
                 $('#node-input-readdoc-msg').html(`Error while processing data.`);
                 $('#node-input-readdoc-msg').show();
@@ -139,9 +140,9 @@
             }
         }
     }
-    
+
     //clears the table and values stored in hidden field
-    function clearEndpointsData(){
+    function clearEndpointsData() {
         $("#node-input-endpoints-container").empty()
         $("#node-input-hiddenendpointsdata").val("");
         $("#node-input-outputs").val(1);
@@ -150,35 +151,35 @@
         $("#ignite-openapirouter").find('[class*="success-text"]').css('display', 'none')
     }
 
-    function prepareEndpoints(data){
+    function prepareEndpoints(data) {
         clearEndpointsData();
-        for (let i in data){
+        for (let i in data) {
             let method = data[i].method.toUpperCase();
             let url = data[i].url;
 
             //Adding fornward slaces to path if not present
-            if(url.slice(0,1) !== "/"){
+            if (url.slice(0, 1) !== "/") {
                 url = `/${url}`
             }
 
             //converting swagger url ro express compatible url
-            if(url.includes('{') && url.includes('{')){
+            if (url.includes('{') && url.includes('{')) {
                 //changing opening brace { with :
-                url = url.replaceAll('{',':');
+                url = url.replaceAll('{', ':');
                 //removing ending brace}
-                url = url.replaceAll('}','');
+                url = url.replaceAll('}', '');
             }
-            
+
             pushToTable(method, url);
         }
     }
 
-    function popFromTable(rowid){
+    function popFromTable(rowid) {
         $(`#${rowid}`).remove();
     }
 
-    function pushToTable(method="GET", url=""){
-        let unique_id = Math.floor(10000 + Math.random() * 90000);
+    function pushToTable(method = "GET", url = "") {
+        let unique_id = Math.floor(10000 + Math.random() * 900000);
 
         //inserting row into the table
         $(`<tr style="width=100%;height:35px;margin-top:5px;" id="node-input-openapi-endpoints-row-${unique_id}">
@@ -197,7 +198,7 @@
             </td>
         </tr>`).appendTo("#node-input-endpoints-container");
         $(`#node-input-openapi-methods-${method}-${unique_id}`).val(method);
-        
+
         //saving data to preserve values
         let endpoint = {
             "method": method,
@@ -206,17 +207,17 @@
         saveDataToInputField(endpoint);
     }
 
-    function saveDataToInputField(endpoint){
-        try{
+    function saveDataToInputField(endpoint) {
+        try {
             let endpoints = $("#node-input-hiddenendpointsdata").val();
-            if(endpoints.length !== 0){
+            if (endpoints.length !== 0) {
                 endpoints = JSON.parse(endpoints);
-            }else {
+            } else {
                 endpoints = [];
             }
             endpoints.push(endpoint);
             $("#node-input-hiddenendpointsdata").val(JSON.stringify(endpoints));
-        }catch(e){
+        } catch (e) {
             console.log("error saving data to input field", e)
         }
     }
@@ -232,8 +233,6 @@
             <label for="node-input-docurl">URL</label>
             <input type="text" id="node-input-docurl" value='' placeholder="https://your-appname.com/openapi/schema">
         </div>
-
-        
 
         <div class="form-row">
             <table>
@@ -251,7 +250,7 @@
                     <td class="node-td-explorerRouter">
                         <div class="node-td-right">
                             <span class="nodeError"></span>
-                            <button type="button" id="node-input-explorerWithDesigner" class="node-input-explorerWithDesigner" title="Load and view data in Ignite Desinger">View in Designer</button>
+                            <button type="button" id="node-input-explorerWithDesigner" class="node-input-explorerWithDesigner" title="Load and view data in Ignite Designer">View in Designer</button>
                         </div>
                     </td>
                 </tr>
@@ -304,10 +303,10 @@
         </dt>
       </dl>
       
-      <h3>View in Desinger</h3>
+      <h3>View in Designer</h3>
       <dl class="message-properties">
         <dt>Button Click <span class="property-type"></span> </dt>
-        <dd>By clicking on 'View in Desinger' it will load the OpenAPI in Ignite Desinger in a new tab.</dd>
+        <dd>By clicking on 'View in Designer' it will load the OpenAPI in Ignite Designer in a new tab.</dd>
       </dl>
 
     <h3>References</h3>
@@ -318,36 +317,35 @@
 </script>
 
 <style>
-
-    .node-input-explorerWithDesigner{
-      display: none;
-      width:140px;
+    .node-input-explorerWithDesigner {
+        display: none;
+        width: 140px;
     }
 
     #ignite-openapirouter {
-    min-height: 300px;
-    height: 600px;
-    min-width: 530px;
+        min-height: 300px;
+        height: 600px;
+        min-width: 530px;
     }
 
-    .node-td-action{
-      width:104px;
+    .node-td-action {
+        width: 104px;
     }
 
-    .node-td-load{
-      width:142px;
+    .node-td-load {
+        width: 142px;
     }
 
-    .node-td-success{
-      width:16px;
+    .node-td-success {
+        width: 16px;
     }
 
-    .node-td-right{
-      float: right;
+    .node-td-right {
+        float: right;
     }
 
-    .node-td-explorerRouter{
-      width:205px;
+    .node-td-explorerRouter {
+        width: 205px;
     }
 
     .success-text {
@@ -357,7 +355,7 @@
         font-weight: bold;
         line-height: 20px;
         display: none;
-        text-shadow: 1px 1px rgba(250,250,250,.3);
+        text-shadow: 1px 1px rgba(250, 250, 250, .3);
     }
 
     .loader {
@@ -367,7 +365,8 @@
         width: 0px;
         height: 0px;
         display: none;
-        -webkit-animation: spin 1s linear infinite; /* Safari */
+        -webkit-animation: spin 1s linear infinite;
+        /* Safari */
         animation: spin 1s linear infinite;
     }
 
@@ -391,6 +390,4 @@
             transform: rotate(360deg);
         }
     }
-
 </style>
-
